@@ -1,0 +1,69 @@
+version: '3.8'
+services:
+  #Laravel PHP Service
+  app:
+    build:
+      context: ./build
+      dockerfile: Dockerfile
+    image: nangjogja
+    container_name: nangjogja
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    depends_on:
+      - db
+    volumes:
+      - ./src:/var/www
+      - ./build/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+    networks:
+      - nangjogja
+
+  #Nginx Service
+  webserver:
+    image: nginx:stable-alpine
+    container_name: nangjogja-nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src:/var/www
+      - ./build/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - nangjogja
+    depends_on:
+      - app
+
+  #MySQL Service
+  db:
+    image: mysql:5.7
+    container_name: nangjogja-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: nangjogja
+      MYSQL_ROOT_PASSWORD: jh7ghggh
+      MYSQL_USER: nangjogja
+      SERVICE_NAME: mysql
+      SERVICE_TAGS: dev
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./build/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - nangjogja
+
+#Docker Networks
+networks:
+  nangjogja:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
