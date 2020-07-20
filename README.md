@@ -23,5 +23,5 @@ docker-compose up -d --build
 ```
 Install dependencies
 ```
-docker-compose run php-fpm composer update
+docker-compose run app composer update
 ```
