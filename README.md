@@ -2,9 +2,12 @@
 Semuanya Tentang Jogja
 
 # Container
+```
 nangjogja : Laravel 7
 ```
+```
 nangjogja-nginx : nginx:stable-alpine
+```
 ```
 nangjogja-db : mysql:5.7  
 ```
