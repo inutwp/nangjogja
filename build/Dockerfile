@@ -4,12 +4,15 @@
 
 FROM php:7.4-fpm
 
-LABEL maintainer="master.gloqi@gmail.com"
-LABEL description="This image is used to setup NangJogja application"
-LABEL version="1.0"
+LABEL maintainer="master.gloqi@gmail.com" \
+	  description="This image is used to setup NangJogja application" \
+	  version="1.0"
+
+# Upgrade & Update system after start
+RUN apt-get update -y && apt-get upgrade -y
 
 # Install dependencies
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
     build-essential \
     libc-dev \
     libjpeg62-turbo-dev \
@@ -53,16 +56,19 @@ RUN docker-php-ext-install \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www 
+
+# Create vendor directory
+RUN mkdir /var/www/vendor
 
 # Add user for laravel application
 RUN groupadd -g 1000 www && useradd -u 1000 -ms /bin/bash -g www www
 
 # Copy existing application directory contents
-#COPY . /var/www
+COPY . /var/www
 
 # Copy existing application directory permissions
-#COPY --chown=www:www . /var/www
+COPY --chown=www:www . /var/www
 
 # Change current user to www
 USER www
