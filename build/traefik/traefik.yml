@@ -1,0 +1,25 @@
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+  mysql:
+    address: ":3306"
+api:
+  insecure: true
+  dashboard: true
+log:
+  level: DEBUG
+  filePath: "/etc/traefik/traefik.log"
+  format: "json"
+accessLog:
+  filePath: "/etc/traefik/access.log"
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
+    network: "t1_proxy"
+  file:
+    watch: true
+    filename: "/traefik.yml"

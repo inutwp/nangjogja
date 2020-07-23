@@ -2,6 +2,9 @@ version: '3.7'
 
 #Docker Networks
 networks:
+  t1_proxy:
+    external:
+      name: t1_proxy
   frontend:
     driver: bridge
   backend:
@@ -13,6 +16,27 @@ volumes:
     driver: local
 
 services:
+  #Traefik Service
+  traefik:
+    image: "traefik:v2.1"
+    container_name: "traefik"
+    hostname: "traefik"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"
+    labels:
+      - "traefik.docker.network=t1_proxy"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./build/traefik/traefik.yml:/traefik.yml"
+      - "./build/cred/users_credentials:/users_credentials"
+      - "./log/traefik.log:/etc/traefik/traefik.log"
+      - "./log/access_traefik.log:/etc/traefik/access.log"
+    networks:
+      - t1_proxy
+      - backend
+
   #Laravel PHP Service
   app:
     build:
@@ -20,11 +44,14 @@ services:
       dockerfile: Dockerfile
     image: nangjogja
     container_name: nangjogja-app
+    hostname: "nangjogja-app"
     restart: unless-stopped
     tty: true
-    ports:
-      - "8081:80"
-      - "8443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=t1_proxy"
+      - "traefik.http.routers.app.rule=Host(`nangjogja.gloqi.com`)"
+      - "traefik.http.routers.app.entrypoints=http"
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
@@ -32,9 +59,10 @@ services:
     depends_on:
       - db
     volumes:
-      - ./src:/var/www
-      - ./build/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - "./src:/var/www"
+      - "./build/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
     networks:
+      - t1_proxy
       - frontend
       - backend
 
@@ -42,27 +70,35 @@ services:
   webserver:
     image: nginx:stable-alpine
     container_name: nangjogja-webserver
+    hostname: "nangjogja-webserver"
     restart: unless-stopped
     tty: true
-    ports:
-      - "80:80"
-      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=t1_proxy"
+      - "traefik.http.routers.webserver.rule=Host(`webserver.localhost`)"
+      - "traefik.http.routers.webserver.entrypoints=http"
     volumes:
-      - ./src:/var/www
-      - ./build/nginx/conf.d/:/etc/nginx/conf.d/
+      - "./src:/var/www"
+      # - "./build/nginx/conf.d/:/etc/nginx/conf.d/"
     depends_on:
       - app
     networks:
+      - t1_proxy
       - backend
 
   #MySQL Service
   db:
     image: mysql:5.7
     container_name: nangjogja-db
+    hostname: "nangjogja-db"
     restart: unless-stopped
     tty: true
-    ports:
-      - "3306:3306"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=t1_proxy"
+      - "traefik.http.routers.db.rule=Host(`db.localhost`)"
+      - "traefik.http.routers.db.entrypoints=mysql"
     environment:
       MYSQL_DATABASE: nangjogja
       MYSQL_ROOT_PASSWORD: jh7ghggh
@@ -73,4 +109,5 @@ services:
       - dbdata:/var/lib/mysql/
       - ./build/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
+      - t1_proxy
       - backend
