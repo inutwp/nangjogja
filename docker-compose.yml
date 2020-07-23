@@ -1,4 +1,17 @@
-version: '3.8'
+version: '3.7'
+
+#Docker Networks
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
+
 services:
   #Laravel PHP Service
   app:
@@ -6,9 +19,12 @@ services:
       context: ./build
       dockerfile: Dockerfile
     image: nangjogja
-    container_name: nangjogja
+    container_name: nangjogja-app
     restart: unless-stopped
     tty: true
+    ports:
+      - "8081:80"
+      - "8443:443"
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
@@ -19,12 +35,13 @@ services:
       - ./src:/var/www
       - ./build/php/php.ini:/usr/local/etc/php/conf.d/php.ini
     networks:
-      - nangjogja
+      - frontend
+      - backend
 
   #Nginx Service
   webserver:
     image: nginx:stable-alpine
-    container_name: nangjogja-nginx
+    container_name: nangjogja-webserver
     restart: unless-stopped
     tty: true
     ports:
@@ -33,10 +50,10 @@ services:
     volumes:
       - ./src:/var/www
       - ./build/nginx/conf.d/:/etc/nginx/conf.d/
-    networks:
-      - nangjogja
     depends_on:
       - app
+    networks:
+      - backend
 
   #MySQL Service
   db:
@@ -56,14 +73,4 @@ services:
       - dbdata:/var/lib/mysql/
       - ./build/mysql/my.cnf:/etc/mysql/my.cnf
     networks:
-      - nangjogja
-
-#Docker Networks
-networks:
-  nangjogja:
-    driver: bridge
-
-#Volumes
-volumes:
-  dbdata:
-    driver: local
+      - backend
