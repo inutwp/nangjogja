@@ -1,62 +1,45 @@
 # Dockerfile NangJogja
 # Repository  : PHP
-# version     : 7.4.x FPM
+# version     : 7.4.x FPM:alpine
 
-FROM php:7.4-fpm
+# Set master image
+FROM php:7.4-fpm-alpine
 
 LABEL maintainer="master.gloqi@gmail.com" \
-	  description="This image is used to setup NangJogja application" \
-	  version="1.0"
+      description="This image is used to setup NangJogja application" \
+      version="1.0"
 
-# Upgrade & Update system after start
-RUN apt-get update -y && apt-get upgrade -y
+# Set working directory
+WORKDIR /var/www/
 
-# Install dependencies
-RUN apt-get install -y --no-install-recommends \
-    build-essential \
-    libc-dev \
-    libjpeg62-turbo-dev \
-    libjpeg-dev \
-    libpng-dev \
-    libzip-dev \
-    libonig-dev \
-    libfreetype6-dev \
-    jpegoptim optipng pngquant gifsicle \
-    locales \
-    zip \
-    unzip \
-    vim \
-    curl \
-    bash \
-    git \
-    nodejs \
-    npm \
-    rsync
+# Install Additional dependencies
+RUN apk update && apk add --no-cache \
+    build-base shadow supervisor \
+    php7-common \
+    php7-pdo \
+    php7-pdo_mysql \
+    php7-mysqli \
+    php7-mcrypt \
+    php7-mbstring \
+    php7-xml \
+    php7-openssl \
+    php7-json \
+    php7-phar \
+    php7-zip \
+    php7-gd \
+    php7-dom \
+    php7-session \
+    php7-zlib \
+    bash
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Configure php extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-# Install extensions
-RUN docker-php-ext-install \
-    pdo \
-    pdo_mysql \
-    mbstring \
-    zip \
-    exif \
-    pcntl \
-    bcmath \
-    opcache \
-    gd \
-    calendar 
+# Add and Enable PHP-PDO Extenstions
+RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
-WORKDIR /var/www 
+# Remove Cache
+RUN rm -rf /var/cache/apk/*
 
 # Create vendor directory
 RUN mkdir /var/www/vendor
@@ -69,6 +52,9 @@ COPY . /var/www
 
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www
+
+# Set File & Folder permission
+RUN chmod -R 0644 /var/www && find /var/www -type d -print0 | xargs -0 chmod 0755
 
 # Change current user to www
 USER www

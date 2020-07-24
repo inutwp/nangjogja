@@ -19,7 +19,7 @@ providers:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
     watch: true
-    network: "t1_proxy"
+    network: proxy
   file:
     watch: true
-    filename: "/traefik.yml"
+    filename: "/build/traefik.yml"
