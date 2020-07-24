@@ -1,0 +1,46 @@
+{"level":"info","msg":"I have to go...","time":"2020-07-24T12:06:13Z"}
+{"level":"info","msg":"Stopping server gracefully","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","msg":"Waiting 10s seconds before killing connections.","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Waiting 10s seconds before killing connections.","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"https","level":"debug","msg":"Waiting 10s seconds before killing connections.","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","msg":"Waiting 10s seconds before killing connections.","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"error","msg":"accept tcp [::]:8080: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"error","msg":"close tcp [::]:8080: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"error","msg":"accept tcp [::]:80: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"error","msg":"close tcp [::]:80: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Entry point http closed","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"https","level":"error","msg":"accept tcp [::]:443: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"https","level":"error","msg":"close tcp [::]:443: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"https","level":"debug","msg":"Entry point https closed","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"error","msg":"accept tcp [::]:3306: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"error","msg":"close tcp [::]:3306: use of closed network connection","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","msg":"Entry point mysql closed","time":"2020-07-24T12:06:13Z"}
+{"level":"debug","msg":"Provider event received {Status:die ID:0afca50b432b404b427c71d6396eca07e4ead7b68195fac830ddcbb51051b08c From:nginx:alpine Type:container Action:die Actor:{ID:0afca50b432b404b427c71d6396eca07e4ead7b68195fac830ddcbb51051b08c Attributes:map[com.docker.compose.config-hash:d14eca83ca974b6c662fc23f6fea977f9fe23ac3173727a8d79ed1668b2cbc7d com.docker.compose.container-number:1 com.docker.compose.oneoff:False com.docker.compose.project:public_html com.docker.compose.service:webserver com.docker.compose.version:1.22.0 exitCode:0 image:nginx:alpine maintainer:NGINX Docker Maintainers \u003cdocker-maint@nginx.com\u003e name:nangjogja-webserver traefik.docker.network:proxy traefik.enable:true traefik.http.routers.webserver.entrypoints:http traefik.http.routers.webserver.rule:Host(`nangjogja.gloqi.com`) traefik.http.routers.webserver.service:webserver traefik.http.services.webserver.loadbalancer.server.port:80]} Scope:local Time:1595592373 TimeNano:1595592373708349746}","providerName":"docker","time":"2020-07-24T12:06:13Z"}
+{"container":"db-public-html-8dcff3fd6fa964ad935e524c6086e38230d9f12b336fd2d91e18dfd5c48584d6","level":"warning","msg":"Could not find network named 'internal' for container '/nangjogja-db'! Maybe you're missing the project's prefix in the label? Defaulting to first available network.","providerName":"docker","serviceName":"db","time":"2020-07-24T12:06:13Z"}
+{"level":"debug","msg":"Configuration received from provider docker: {\"http\":{\"routers\":{\"app\":{\"entryPoints\":[\"http\"],\"service\":\"app\",\"rule\":\"Host(`app.localhost`)\"},\"db\":{\"entryPoints\":[\"mysql\"],\"service\":\"db\",\"rule\":\"Host(`db.localhost`)\"},\"traefik\":{\"entryPoints\":[\"http\"],\"service\":\"traefik-public-html\",\"rule\":\"Host(`traefik-public-html`)\"}},\"services\":{\"app\":{\"loadBalancer\":{\"servers\":[{\"url\":\"http://172.26.0.3:9000\"}],\"passHostHeader\":true}},\"db\":{\"loadBalancer\":{\"servers\":[{\"url\":\"http://192.168.80.2:3306\"}],\"passHostHeader\":true}},\"traefik-public-html\":{\"loadBalancer\":{\"servers\":[{\"url\":\"http://172.26.0.2:80\"}],\"passHostHeader\":true}}}},\"tcp\":{},\"udp\":{}}","providerName":"docker","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware api@internal","routerName":"api@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware dashboard@internal","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_stripprefix@internal","middlewareType":"StripPrefix","msg":"Creating middleware","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_stripprefix@internal","msg":"Adding tracing to middleware","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","middlewareType":"RedirectRegex","msg":"Creating middleware","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","middlewareType":"RedirectRegex","msg":"Setting up redirection from ^(http:\\/\\/(\\[[\\w:.]+\\]|[\\w\\._-]+)(:\\d+)?)\\/$ to ${1}/dashboard/","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","msg":"Adding tracing to middleware","routerName":"dashboard@internal","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"traefik-internal-recovery","middlewareType":"Recovery","msg":"Creating middleware","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","middlewareName":"pipelining","middlewareType":"Pipelining","msg":"Creating middleware","routerName":"db@docker","serviceName":"db","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","msg":"Creating load-balancer","routerName":"db@docker","serviceName":"db","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","msg":"Creating server 0 http://192.168.80.2:3306","routerName":"db@docker","serverName":0,"serviceName":"db","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware db","routerName":"db@docker","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"mysql","level":"debug","middlewareName":"traefik-internal-recovery","middlewareType":"Recovery","msg":"Creating middleware","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","middlewareName":"pipelining","middlewareType":"Pipelining","msg":"Creating middleware","routerName":"app@docker","serviceName":"app","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Creating load-balancer","routerName":"app@docker","serviceName":"app","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Creating server 0 http://172.26.0.3:9000","routerName":"app@docker","serverName":0,"serviceName":"app","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware app","routerName":"app@docker","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","middlewareName":"pipelining","middlewareType":"Pipelining","msg":"Creating middleware","routerName":"traefik@docker","serviceName":"traefik-public-html","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Creating load-balancer","routerName":"traefik@docker","serviceName":"traefik-public-html","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","msg":"Creating server 0 http://172.26.0.2:80","routerName":"traefik@docker","serverName":0,"serviceName":"traefik-public-html","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware traefik-public-html","routerName":"traefik@docker","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"http","level":"debug","middlewareName":"traefik-internal-recovery","middlewareType":"Recovery","msg":"Creating middleware","time":"2020-07-24T12:06:13Z"}
+{"level":"debug","msg":"No default certificate, generating one","time":"2020-07-24T12:06:13Z"}
+{"entryPointName":"traefik","level":"debug","msg":"Entry point traefik closed","time":"2020-07-24T12:06:14Z"}
+{"level":"info","msg":"Server stopped","time":"2020-07-24T12:06:14Z"}
+{"level":"info","msg":"Shutting down","time":"2020-07-24T12:06:14Z"}
