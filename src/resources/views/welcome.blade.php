@@ -64,6 +64,9 @@
         </style>
     </head>
     <body>
+
+        <?php $svrAddr = $_SERVER['SERVER_ADDR']; $svrAddr = substr((string)$svrAddr,7);?>
+
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
@@ -85,10 +88,7 @@
                 </div>
 
                 <div class="links">
-                  <a>DOCKER</a>
-                  <a>PHP 7.4-FPM</a>
-                  <a>mysql 5.7.22</a>
-                  <a>nginx</a>
+                  <a>{{$svrAddr}}</a>
                 </div>
             </div>
         </div>
