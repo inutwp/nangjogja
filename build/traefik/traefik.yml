@@ -22,4 +22,4 @@ providers:
     network: proxy
   file:
     watch: true
-    filename: "/build/traefik.yml"
+    filename: "/traefik.yml"

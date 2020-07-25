@@ -21,11 +21,14 @@ services:
     hostname: "traefik"
     restart: unless-stopped
     ports:
+      - "80:80"
       - "3001:8080"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.traefik.entrypoints=http"
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.docker.network=proxy"
+    #   - "traefik.http.routers.traefik.entrypoints=http"
+    #   - "traefik.http.routers.app.service=traefik"
+    #   - "traefik.http.services.traefik.loadbalancer.server.port=3001"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./build/traefik/traefik.yml:/traefik.yml"
@@ -50,7 +53,7 @@ services:
       - "traefik.http.routers.app.rule=Host(`app.localhost`)"
       - "traefik.http.routers.app.entrypoints=http"
       - "traefik.http.routers.app.service=app"
-      - "traefik.http.services.app.loadbalancer.server.port=9000"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
@@ -67,8 +70,8 @@ services:
   #Nginx Service
   webserver:
     image: "nginx:alpine"
-    container_name: "nangjogja-webserver"
-    hostname: "nangjogja-webserver"
+    # container_name: "nangjogja-webserver"
+    # hostname: "nangjogja-webserver"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
