@@ -21,27 +21,27 @@ services:
     hostname: "traefik"
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "3001:8080"
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.docker.network=proxy"
-    #   - "traefik.http.routers.traefik.entrypoints=http"
-    #   - "traefik.http.routers.app.service=traefik"
-    #   - "traefik.http.services.traefik.loadbalancer.server.port=3001"
+      - target: 80
+        published: ${TRAEFIK_EDGE_ROUTE_PORT}
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: ${TRAEFIK_DASHBOARD_PORT}
+        protocol: tcp
+        mode: host
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./build/traefik/traefik.yml:/traefik.yml"
-      - "./build/cred/users_credentials:/users_credentials"
-      - "./log/traefik.log:/etc/traefik/traefik.log"
-      - "./log/access_traefik.log:/etc/traefik/access.log"
+      - "${BUILD_DIR}/traefik/traefik.yml:/traefik.yml:ro"
+      - "${BUILD_DIR}/cred/users_credentials:/users_credentials:ro"
+      - "${LOG_DIR}/traefik.log:/etc/traefik/traefik.log"
+      - "${LOG_DIR}/access_traefik.log:/etc/traefik/access.log"
     networks:
       - proxy
 
   #Laravel PHP Service
   app:
     build:
-      context: ./build
+      context: ${BUILD_DIR}
       dockerfile: Dockerfile
     image: "nangjogja"
     container_name: "nangjogja-app"
@@ -53,16 +53,17 @@ services:
       - "traefik.http.routers.app.rule=Host(`app.localhost`)"
       - "traefik.http.routers.app.entrypoints=http"
       - "traefik.http.routers.app.service=app"
+      - "traefik.http.routers.app.priority=2"
       - "traefik.http.services.app.loadbalancer.server.port=80"
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
-    working_dir: /var/www
+    working_dir: ${WORKDIR}
     depends_on:
       - db
     volumes:
       - "./src:/var/www"
-      - "./build/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+      - "${BUILD_DIR}/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
     networks:
       - proxy
       - internal
@@ -70,21 +71,32 @@ services:
   #Nginx Service
   webserver:
     image: "nginx:alpine"
-    # container_name: "nangjogja-webserver"
-    # hostname: "nangjogja-webserver"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.webserver.rule=Host(`nangjogja.gloqi.com`)"
+      - "traefik.http.routers.webserver.rule=Host(`${DOMAIN_NAME_APP}`)"
       - "traefik.http.routers.webserver.entrypoints=http"
       - "traefik.http.routers.webserver.service=webserver"
+      - "traefik.http.routers.webserver.priority=1"
+      - "traefik.http.middlewares.webserver.contenttype.autodetect=false"
+      - "traefik.http.middlewares.webserver.compress=true"
+      - "traefik.http.middlewares.webserver.ratelimit.average=300"
+      - "traefik.http.middlewares.webserver.ratelimit.burst=500"
+      - "traefik.http.services.webserver.loadbalancer.passhostheader=true"
+      - "traefik.http.services.webserver.loadbalancer.responseforwarding.flushinterval=60s"
+      - "traefik.http.services.webserver.loadbalancer.server.scheme=http"
       - "traefik.http.services.webserver.loadbalancer.server.port=80"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.port=80"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.interval=10s"
+    working_dir: ${WORKDIR}
     volumes:
-      - "./src:/var/www"
-      - "./build/nginx/conf.d/:/etc/nginx/conf.d/"
-      - "./log/nginx.log:/var/log/nginx/error.log"
-      - "./log/access_nginx.log:/var/log/nginx/access.log"
+      - "${LARAVEL_PROJECT_DIR}:/var/www"
+      - "${BUILD_DIR}/nginx/conf.d/:/etc/nginx/conf.d/"
+      - "${LOG_DIR}/nginx.log:/var/log/nginx/error.log"
+      - "${LOG_DIR}/access_nginx.log:/var/log/nginx/access.log"
     depends_on:
       - app
     networks:
@@ -105,15 +117,15 @@ services:
       - "traefik.http.routers.db.service=db"
       - "traefik.http.services.db.loadbalancer.server.port=3306"
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
     environment:
-      MYSQL_DATABASE: nangjogja
-      MYSQL_USER: nangjogja
-      MYSQL_ROOT_PASSWORD: jh7ghggh
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_DB_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       SERVICE_NAME: mysql
       SERVICE_TAGS: dev
     volumes:
       - "dbdata:/var/lib/mysql/"
-      - "./build/mysql/my.cnf:/etc/mysql/my.cnf"
+      - "${BUILD_DIR}/mysql/my.cnf:/etc/mysql/my.cnf"
     networks:
       - internal
