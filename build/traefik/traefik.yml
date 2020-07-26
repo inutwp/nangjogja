@@ -1,6 +1,19 @@
+## STATIC CONFIGURATION
+serversTransport:
+  maxIdleConnsPerHost: 1000
+  forwardingTimeouts:
+    dialTimeout: 1
 entryPoints:
   http:
     address: ":80"
+    transport:
+      lifeCycle:
+        requestAcceptGraceTimeout: 0
+        graceTimeOut: 10
+      respondingTimeouts:
+        readTimeout: 120
+        writeTimeout: 120
+        idleTimeout: 120
   https:
     address: ":443"
   mysql:
@@ -8,13 +21,19 @@ entryPoints:
 api:
   insecure: true
   dashboard: true
+  debug: true
 log:
   level: DEBUG
   filePath: "/etc/traefik/traefik.log"
   format: "json"
 accessLog:
   filePath: "/etc/traefik/access.log"
+  filters:
+    statusCodes:
+      - 400
+      - 499
 providers:
+  providersThrottleDuration: 120
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
