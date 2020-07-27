@@ -1,0 +1,39 @@
+version: '3.7'
+
+#Docker Networks
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
+    external: false
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
+
+services:
+  # Traefik Service
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    hostname: "traefik"
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: ${TRAEFIK_EDGE_ROUTE_PORT}
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: ${TRAEFIK_DASHBOARD_PORT}
+        protocol: tcp
+        mode: host
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${BUILD_DIR}/traefik/traefik.yml:/traefik.yml:ro"
+      - "${BUILD_DIR}/cred/users_credentials:/users_credentials:ro"
+      - "${LOG_DIR}/traefik.log:/etc/traefik/traefik.log"
+      - "${LOG_DIR}/access_traefik.log:/etc/traefik/access.log"
+    networks:
+      - proxy
