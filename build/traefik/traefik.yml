@@ -2,18 +2,18 @@
 serversTransport:
   maxIdleConnsPerHost: 1000
   forwardingTimeouts:
-    dialTimeout: 1
+    dialTimeout: 60
 entryPoints:
   http:
     address: ":80"
     transport:
       lifeCycle:
-        requestAcceptGraceTimeout: 0
-        graceTimeOut: 10
+        requestAcceptGraceTimeout: 60
+        graceTimeOut: 60
       respondingTimeouts:
-        readTimeout: 120
-        writeTimeout: 120
-        idleTimeout: 120
+        readTimeout: 3000
+        writeTimeout: 3000
+        idleTimeout: 1800
   https:
     address: ":443"
   mysql:
@@ -33,7 +33,7 @@ accessLog:
       - 400
       - 499
 providers:
-  providersThrottleDuration: 120
+  providersThrottleDuration: 2
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false

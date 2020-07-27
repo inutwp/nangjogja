@@ -14,7 +14,7 @@ class GenerateController extends Controller
 
 	public function generate()
 	{
-		$createGenerate = 50;
+		$createGenerate = 100;
 		$createGenerate = (int) $createGenerate;
 		$name = [];
 		$id = [];
