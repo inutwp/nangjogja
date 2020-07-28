@@ -14,13 +14,16 @@ class GenerateController extends Controller
 
 	public function generate()
 	{
-		$createGenerate = 100;
+		$createGenerate = rand(10,100);
 		$createGenerate = (int) $createGenerate;
 		$name = [];
 		$id = [];
 		$telp = [];
 		$email = [];
 		$data['from'] = substr($_SERVER['SERVER_ADDR'],7);
+		$data['process'] = 0;
+
+		$startProcess = microtime(true);
 
 		for ($i=0; $i < $createGenerate; $i++) {
 			$name[$i] = $this->generateName();
@@ -41,6 +44,14 @@ class GenerateController extends Controller
 			];
 			$data['generated'][] = $datas;
 		}
+
+		$endProcess = number_format(microtime(true) - $startProcess, 5);
+		$data['process'] = $endProcess;
+
+		$f = fopen(storage_path((string)__FUNCTION__.'.txt'), 'a+');
+		$logs = json_encode([$data['from'],$data['process'], date('H:i')]);
+        fwrite($f,$logs."\n");
+        fclose($f);
 
 		return response()->json($data);
 	}
@@ -67,7 +78,7 @@ class GenerateController extends Controller
 	{
 		$email = $this->faker->email;
 		$email = explode('@',$email);
-		$email = $email[0].'@'.'gmail.com';
+		$email = $email[0].'@'.'yomail.com';
 		return $email;
 	}
 }

@@ -1,0 +1,133 @@
+version: '3.7'
+
+#Docker Networks
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
+    external: false
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
+
+services:
+  # Traefik Service
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: ${TRAEFIK_EDGE_ROUTE_PORT}
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: ${TRAEFIK_DASHBOARD_PORT}
+        protocol: tcp
+        mode: host
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${BUILD_DIR}/traefik/traefik.yml:/traefik.yml:ro"
+      - "${BUILD_DIR}/cred/users_credentials:/users_credentials:ro"
+      - "${LOG_DIR}/traefik.log:/etc/traefik/traefik.log"
+      - "${LOG_DIR}/access_traefik.log:/etc/traefik/access.log"
+    networks:
+      - proxy
+
+  #Laravel PHP Service
+  app:
+    build:
+      context: ${BUILD_DIR}
+      dockerfile: Dockerfile
+    image: "nangjogja"
+    container_name: "nangjogja-app"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.app.rule=Host(`app.localhost`)"
+      - "traefik.http.routers.app.entrypoints=http"
+      - "traefik.http.routers.app.service=app"
+      - "traefik.http.routers.app.priority=2"
+      - "traefik.http.middlewares.app.contenttype.autodetect=true"
+      - "traefik.http.middlewares.app.compress=true"
+      - "traefik.http.services.app.loadbalancer.passhostheader=true"
+      - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
+      - "traefik.http.services.app.loadbalancer.server.scheme=http"
+      - "traefik.http.services.app.loadbalancer.server.port=80"
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: ${WORKDIR}
+    volumes:
+      - "./src:/var/www"
+      - "${BUILD_DIR}/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+    networks:
+      - proxy
+      - internal
+
+  #Nginx Service
+  webserver:
+    image: "nginx:alpine"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.webserver.rule=Host(`${DOMAIN_NAME_APP}`)"
+      - "traefik.http.routers.webserver.entrypoints=http"
+      - "traefik.http.routers.webserver.service=webserver"
+      - "traefik.http.routers.webserver.priority=1"
+      - "traefik.http.middlewares.webserver.contenttype.autodetect=true"
+      - "traefik.http.middlewares.webserver.compress=true"
+      - "traefik.http.middlewares.webserver.ratelimit.average=100"
+      - "traefik.http.middlewares.webserver.ratelimit.burst=50"
+      - "traefik.http.middlewares.webserver.buffering.maxRequestBodyBytes=1000000"
+      - "traefik.http.middlewares.webserver.buffering.maxResponseBodyBytes=1000000"
+      - "traefik.http.middlewares.webserver.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
+      - "traefik.http.middlewares.webserver.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
+      - "traefik.http.services.webserver.loadbalancer.passhostheader=true"
+      - "traefik.http.services.webserver.loadbalancer.responseforwarding.flushinterval=20s"
+      - "traefik.http.services.webserver.loadbalancer.server.scheme=http"
+      - "traefik.http.services.webserver.loadbalancer.server.port=80"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.port=80"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.services.webserver.loadbalancer.healthcheck.interval=10s"
+    working_dir: ${WORKDIR}
+    volumes:
+      - "${LARAVEL_PROJECT_DIR}:/var/www"
+      - "${BUILD_DIR}/nginx/conf.d/:/etc/nginx/conf.d/"
+      - "${LOG_DIR}/nginx.log:/var/log/nginx/error.log"
+      - "${LOG_DIR}/access_nginx.log:/var/log/nginx/access.log"
+    networks:
+      - proxy
+      - internal
+
+  #MySQL Service
+  db:
+    image: "mysql:5.7"
+    container_name: "nangjogja-db"
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=internal"
+      - "traefik.http.routers.db.rule=Host(`db.localhost`)"
+      - "traefik.http.routers.db.entrypoints=mysql"
+      - "traefik.http.routers.db.service=db"
+      - "traefik.http.services.db.loadbalancer.server.port=3306"
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_DB_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SERVICE_NAME: mysql
+      SERVICE_TAGS: dev
+    volumes:
+      - "dbdata:/var/lib/mysql/"
+      - "${BUILD_DIR}/mysql/my.cnf:/etc/mysql/my.cnf"
+    networks:
+      - internal
