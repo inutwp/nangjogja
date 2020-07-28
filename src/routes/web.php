@@ -14,5 +14,5 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/','TestController@home');
-// Route::get('/svr/server','TestController@infoServer');
+// Route::get('/server','TestController@infoServer');
 Route::get('/generate', 'GenerateController@generate');

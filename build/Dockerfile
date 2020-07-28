@@ -30,10 +30,11 @@ RUN apk update && apk add --no-cache \
     php7-dom \
     php7-session \
     php7-zlib \
-    bash
+    bash \
+    vim
 
 # Add and Enable PHP-PDO Extenstions
-RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql opcache 
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

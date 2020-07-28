@@ -11,17 +11,17 @@ entryPoints:
         requestAcceptGraceTimeout: 60
         graceTimeOut: 60
       respondingTimeouts:
-        readTimeout: 3000
-        writeTimeout: 3000
-        idleTimeout: 1800
+        readTimeout: 60
+        writeTimeout: 60
+        idleTimeout: 180
   https:
     address: ":443"
   mysql:
     address: ":3306"
 api:
-  insecure: true
-  dashboard: true
-  debug: true
+  insecure: false
+  dashboard: false
+  debug: false
 log:
   level: DEBUG
   filePath: "/etc/traefik/traefik.log"
@@ -37,7 +37,6 @@ providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    watch: true
     network: proxy
   file:
     watch: true
