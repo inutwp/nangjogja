@@ -40,7 +40,7 @@ RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql opca
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Remove Cache
-RUN rm -rf /var/cache/apk/*
+RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apk/*
 
 # Create vendor directory
 RUN mkdir /var/www/vendor
