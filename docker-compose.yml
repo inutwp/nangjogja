@@ -58,13 +58,10 @@ services:
       - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
       - "traefik.http.services.app.loadbalancer.server.scheme=http"
       - "traefik.http.services.app.loadbalancer.server.port=80"
-    environment:
-      SERVICE_NAME: app
-      SERVICE_TAGS: dev
-    working_dir: ${WORKDIR}
     volumes:
       - "${LARAVEL_PROJECT_DIR}:/var/www"
-      - "${BUILD_DIR}/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
+      - "${BUILD_DIR}/php/php.ini:/usr/local/etc/php/php.ini"
+      - "${BUILD_DIR}/php/www.conf:/usr/local/etc/php-fpm.d/www.conf"
     networks:
       - proxy
       - internal
@@ -96,7 +93,6 @@ services:
       - "traefik.http.services.webserver.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
       - "traefik.http.services.webserver.loadbalancer.healthcheck.timeout=5s"
       - "traefik.http.services.webserver.loadbalancer.healthcheck.interval=10s"
-    working_dir: ${WORKDIR}
     volumes:
       - "${LARAVEL_PROJECT_DIR}:/var/www"
       - "${BUILD_DIR}/nginx/nginx.conf:/etc/nginx/nginx.conf"

@@ -9,9 +9,6 @@ LABEL maintainer="master.gloqi@gmail.com" \
       description="This image is used to setup NangJogja application" \
       version="1.0"
 
-# Set working directory
-WORKDIR /var/www/
-
 # Install Additional dependencies
 RUN apk update && apk add --no-cache \
     build-base shadow supervisor \
@@ -36,20 +33,23 @@ RUN apk update && apk add --no-cache \
 # Add and Enable PHP-PDO Extenstions
 RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql opcache 
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
 # Remove Cache
 RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apk/*
+
+# Copy existing application directory contents
+COPY . /var/www
+
+# Set working directory
+WORKDIR /var/www/
+
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Create vendor directory
 RUN mkdir /var/www/vendor
 
 # Add user for laravel application
 RUN groupadd -g 1000 www && useradd -u 1000 -ms /bin/bash -g www www
-
-# Copy existing application directory contents
-COPY . /var/www
 
 # Copy existing application directory permissions
 COPY --chown=www:www . /var/www
@@ -63,3 +63,5 @@ USER www
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
+
+USER root

@@ -19,8 +19,8 @@ entryPoints:
   mysql:
     address: ":3306"
 api:
-  insecure: true
-  dashboard: true
+  insecure: false
+  dashboard: false
   debug: false
 log:
   level: DEBUG

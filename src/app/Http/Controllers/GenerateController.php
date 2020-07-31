@@ -53,7 +53,9 @@ class GenerateController extends Controller
         fwrite($f,$logs."\n");
         fclose($f);
 
-		return response()->json($data);
+        $data = $data['generated'];
+        return view('page.generate', compact('data'));
+		// return response()->json($data);
 	}
 
 	public function generateName()
