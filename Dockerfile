@@ -11,7 +11,7 @@ LABEL maintainer="master.gloqi@gmail.com" \
 
 # Install Additional dependencies
 RUN apk update && apk add --no-cache \
-    build-base shadow supervisor \
+    build-base shadow \
     php7-common \
     php7-pdo \
     php7-pdo_mysql \
@@ -31,31 +31,39 @@ RUN apk update && apk add --no-cache \
     vim
 
 # Add and Enable PHP-PDO Extenstions
-RUN docker-php-ext-install pdo pdo_mysql && docker-php-ext-enable pdo_mysql opcache 
+RUN docker-php-ext-install pdo pdo_mysql && \
+    docker-php-ext-enable pdo_mysql opcache 
 
 # Remove Cache
-RUN rm -rf /var/lib/apt/lists/* && rm -rf /var/cache/apk/*
+RUN rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apk/*
 
-# Copy existing application directory contents
-COPY . /var/www
+# Copy config php
+COPY config/php/php.ini /usr/local/etc/php/php.ini
+COPY config/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Make working directory
+RUN mkdir -p /var/www/
 
 # Set working directory
 WORKDIR /var/www/
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
 # Create vendor directory
 RUN mkdir /var/www/vendor
 
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 # Add user for laravel application
-RUN groupadd -g 1000 www && useradd -u 1000 -ms /bin/bash -g www www
+RUN groupadd -g 1000 www && \
+    useradd -u 1000 -ms /bin/bash -g www www
 
 # Copy existing application directory permissions
-COPY --chown=www:www . /var/www
+COPY --chown=www:www src/ /var/www
 
 # Set File & Folder permission
-RUN chmod -R 0644 /var/www && find /var/www -type d -print0 | xargs -0 chmod 0755
+RUN chmod -R 0644 /var/www && \
+    find /var/www -type d -print0 | xargs -0 chmod 0755
 
 # Change current user to www
 USER www
@@ -63,5 +71,3 @@ USER www
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
-
-USER root
