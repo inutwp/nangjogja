@@ -10,8 +10,6 @@ networks:
 
 #Volumes
 volumes:
-  dbdata:
-    driver: local
   lvstorage:
     driver: local
 
@@ -39,7 +37,7 @@ services:
     networks:
       - proxy
 
-  #Laravel PHP Service
+  #Laravel PHP Nginx Service
   app:
     build:
       context: "."
@@ -49,7 +47,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      - "traefik.http.routers.app.rule=Host(`app.localhost`)"
+      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME_APP}`)"
       - "traefik.http.routers.app.entrypoints=http"
       - "traefik.http.routers.app.service=app"
       - "traefik.http.routers.app.priority=1"
@@ -65,44 +63,11 @@ services:
       - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
       - "traefik.http.services.app.loadbalancer.server.scheme=http"
       - "traefik.http.services.app.loadbalancer.server.port=80"
+      - "traefik.http.services.app.loadbalancer.healthcheck.port=80"
+      - "traefik.http.services.app.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
+      - "traefik.http.services.app.loadbalancer.healthcheck.timeout=5s"
+      - "traefik.http.services.app.loadbalancer.healthcheck.interval=10s"
     volumes:
-      - "${LARAVEL_PROJECT_DIR}:/var/www"
-      - "lvstorage:/var/www/storage/"
-    networks:
-      - proxy
-      - internal
-
-  #Nginx Service
-  webserver:
-    image: "nginx:alpine"
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.webserver.rule=Host(`${DOMAIN_NAME_APP}`)"
-      - "traefik.http.routers.webserver.entrypoints=http"
-      - "traefik.http.routers.webserver.service=webserver"
-      - "traefik.http.routers.webserver.priority=2"
-      - "traefik.http.middlewares.webserver.contenttype.autodetect=true"
-      - "traefik.http.middlewares.webserver.compress=true"
-      - "traefik.http.middlewares.webserver.ratelimit.average=100"
-      - "traefik.http.middlewares.webserver.ratelimit.burst=50"
-      - "traefik.http.middlewares.webserver.buffering.maxRequestBodyBytes=1000000"
-      - "traefik.http.middlewares.webserver.buffering.maxResponseBodyBytes=1000000"
-      - "traefik.http.middlewares.webserver.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
-      - "traefik.http.middlewares.webserver.circuitbreaker.expression=LatencyAtQuantileMS(50.0) > 100"
-      - "traefik.http.services.webserver.loadbalancer.passhostheader=true"
-      - "traefik.http.services.webserver.loadbalancer.responseforwarding.flushinterval=20s"
-      - "traefik.http.services.webserver.loadbalancer.server.scheme=http"
-      - "traefik.http.services.webserver.loadbalancer.server.port=80"
-      - "traefik.http.services.webserver.loadbalancer.healthcheck.port=80"
-      - "traefik.http.services.webserver.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
-      - "traefik.http.services.webserver.loadbalancer.healthcheck.timeout=5s"
-      - "traefik.http.services.webserver.loadbalancer.healthcheck.interval=10s"
-    volumes:
-      - "${LARAVEL_PROJECT_DIR}:/var/www"
-      - "${CONFIG_DIR}/nginx/nginx.conf:/etc/nginx/nginx.conf"
-      - "${CONFIG_DIR}/nginx/conf.d/:/etc/nginx/conf.d/"
       - "${LOG_DIR}/nginx.log:/var/log/nginx/error.log"
       - "${LOG_DIR}/access_nginx.log:/var/log/nginx/access.log"
     networks:
