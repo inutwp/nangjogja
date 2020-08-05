@@ -1,14 +1,21 @@
 FROM nginx:1.19.1-alpine
 
+# Labels
+LABEL nangjogja.version="v1.0"
+LABEL nangjogja.base.image="nginx:1.19.1-alpine"
+LABEL nangjogja.php.version="php7.4:fpm"
+LABEL nangjogja.laravel.version="Laravel 7"
+
 # Argument list
 ARG PHP_VERSION=7.4
 ARG ALPINE_VERSION=3.9
 ARG CONFIG_DIR=/config
 ARG WORK_DIR=/var/www/
+ARG VENDOR_DIR=/var/www/vendor/
 ARG LARAVEL_DIR=/src/
 
 # Instal requirement
-RUN apk --update --no-cache add ca-certificates supervisor bash 
+RUN apk --update --no-cache add ca-certificates supervisor bash
 ADD https://dl.bintray.com/php-alpine/key/php-alpine.rsa.pub /etc/apk/keys/php-alpine.rsa.pub
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/apk/repositories && \
     echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/community" >> /etc/apk/repositories && \
@@ -51,10 +58,10 @@ RUN rm -rf /etc/nginx/nginx.conf && \
     rm -rf /etc/nginx/conf.d/default.conf && \
     mkdir -p /etc/nginx/sites-available/ && \
     mkdir -p /etc/nginx/sites-enabled/ && \
-    ln -s /etc/nginx/sites-available/default.conf /etc/nginx/sites-enabled/default.conf
+    ln -s /etc/nginx/sites-available/site.conf /etc/nginx/sites-enabled/site.conf
 COPY ${CONFIG_DIR}/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ${CONFIG_DIR}/nginx/conf.d/site.conf /etc/nginx/conf.d/site.conf
-COPY ${CONFIG_DIR}/nginx/conf.d/site.conf /etc/nginx/sites-available/default.conf
+COPY ${CONFIG_DIR}/nginx/conf.d/site.conf /etc/nginx/sites-available/site.conf
 
 # Config PHP
 RUN rm -rf /etc/php7/php.ini && \
@@ -75,19 +82,17 @@ RUN mkdir -p ${WORK_DIR}
 WORKDIR ${WORK_DIR}
 
 # Add user for laravel application
-#RUN adduser -D -g 'nobody' www
 RUN addgroup -g 1000 -S www && \
     adduser -S -D -H -u 1000 -h ${WORK_DIR} -s /bin/bash -G www -g www www
 
-# Copy existing application directory permissions
-COPY --chown=www:www ${LARAVEL_DIR} ${WORK_DIR}
+# Copy existing application directory
+COPY ${LARAVEL_DIR} ${WORK_DIR}
 
-# Set File & Folder permission
-RUN chmod -R 0644 ${WORK_DIR} && \
-    find ${WORK_DIR} -type d -print0 | xargs -0 chmod 0755
+# Create & set owner vendor directory
+RUN mkdir -p ${VENDOR_DIR}
 
 # Expose Port 80 & 9000
-EXPOSE 80 9000
+EXPOSE 80 443 9000
 
 # Copy & start config
 COPY /script/start.sh /start.sh
