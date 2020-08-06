@@ -15,7 +15,8 @@
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0",
         "spatie/async": "^1.4",
-        "appstract/laravel-opcache":"^4.0"
+        "appstract/laravel-opcache":"^4.0",
+        "hirak/prestissimo":"0.3.*"
     },
     "require-dev": {
         "facade/ignition": "^2.0",
