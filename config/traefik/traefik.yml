@@ -8,19 +8,19 @@ entryPoints:
     address: ":80"
     transport:
       lifeCycle:
-        requestAcceptGraceTimeout: 60
-        graceTimeOut: 60
+        requestAcceptGraceTimeout: 120
+        graceTimeOut: 120
       respondingTimeouts:
-        readTimeout: 60
-        writeTimeout: 60
-        idleTimeout: 180
+        readTimeout: 120
+        writeTimeout: 120
+        idleTimeout: 240
   https:
     address: ":443"
   mysql:
     address: ":3306"
 api:
-  insecure: true
-  dashboard: true
+  insecure: false
+  dashboard: false
   debug: false
 log:
   level: DEBUG
@@ -32,6 +32,7 @@ accessLog:
     statusCodes:
       - 400
       - 499
+      - 500
 providers:
   providersThrottleDuration: 2
   docker:
