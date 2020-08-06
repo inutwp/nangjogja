@@ -14,7 +14,8 @@ class TestController extends Controller
 
     public function infoServer()
     {
-    	ob_start();
-    	return phpinfo();
+    	// ob_start();
+    	// return phpinfo();
+    	return view('welcome');
     }
 }
