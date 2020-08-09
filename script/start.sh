@@ -1,11 +1,11 @@
 #!/bin/bash
 
 cd /var/www/
-composer install --optimize-autoloader
 cp .env.example .env
-php artisan key:generate
-php artisan optimize
-php artisan storage:link
+composer install --optimize-autoloader
+php /var/www/artisan key:generate
+php /var/www/artisan storage:link
+php /var/www/artisan optimize
 chown -R www:www /var/www/
 chmod -R 0644 /var/www/
 find /var/www/ -type d -print0 | xargs -0 chmod 0755

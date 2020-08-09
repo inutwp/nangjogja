@@ -3,10 +3,11 @@ version: '3.7'
 #Docker Networks
 networks:
   proxy:
+    driver: overlay
     external: true
   internal:
-    driver: bridge
-    external: false
+    driver: overlay
+    external: true
 
 #Volumes
 volumes:
@@ -17,15 +18,14 @@ services:
   # Traefik Service
   traefik:
     image: "traefik:v2.2"
-    container_name: "traefik"
     restart: unless-stopped
     ports:
       - target: 80
-        published: ${TRAEFIK_EDGE_ROUTE_PORT}
+        published: 80
         protocol: tcp
         mode: host
       - target: 8080
-        published: ${TRAEFIK_DASHBOARD_PORT}
+        published: 3001
         protocol: tcp
         mode: host
     volumes:
@@ -39,10 +39,7 @@ services:
 
   #Laravel PHP Nginx Service
   app:
-    build:
-      context: "."
-      dockerfile: Dockerfile
-    image: "nangjogja"
+    image: "inutwp/nangjogja:v1.4.0"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
