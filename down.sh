@@ -3,10 +3,10 @@
 cd /home/nangjogja/public_html/nangjogja/
 
 echo "+++++++++++++++++++++++++++++++++++++++ Down Service ++++++++++++++++++++++++++++++++++++++"
-	docker-compose down
+	docker-compose down && docker image prune -f
 
-echo "+++++++++++++++++++++++++++++++++++++++ Clear Redundant ++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	docker image prune -f && docker container prune -f && docker network prune -f && docker volume prune -f
+# echo "+++++++++++++++++++++++++++++++++++++++ Clear Redundant ++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	# docker image prune -f && docker container prune -f && docker network prune -f && docker volume prune -f
 
 echo "+++++++++++++++++++++++++++++++++++++++ Clear Log ++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	truncate -s 0 /home/nangjogja/public_html/nangjogja/log/nginx.log
