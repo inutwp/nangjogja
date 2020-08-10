@@ -8,7 +8,4 @@ echo "+++++++++++++++++++++++++++++++++++++++ Create Proxy and Internal Network 
 echo "+++++++++++++++++++++++++++++++++++++++ Build App ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 	docker-compose up --no-deps -d --build --remove-orphans && docker-compose ps
 
-echo "+++++++++++++++++++++++++++++++++++++++ Clear Redundant ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	docker image prune -y && docker container prune -y
-
 echo "+++++++++++++++++++++++++++++++++++++++ App Ready, Wait for supervisord ++++++++++++++++++++++++++++++++++++++++"

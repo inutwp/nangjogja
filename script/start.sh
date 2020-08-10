@@ -6,7 +6,7 @@ composer install --optimize-autoloader
 
 sed -i -e "s/APP_NAME=Laravel/APP_NAME=nangjogja/g" /var/www/.env
 sed -i -e "s/APP_ENV=local/APP_ENV=production/g" /var/www/.env
-sed -i -e "s/APP_DEBUG=true/APP_ENV=false/g" /var/www/.env
+sed -i -e "s/APP_DEBUG=true/APP_DEBUG=false/g" /var/www/.env
 sed -i -e "s/APP_KEY=/APP_KEY=base64:g4vvYgJLWCSfFOGRKXa7Vwsk2BXkbr8n1PgnWH8vPYY=/g" /var/www/.env
 sed -i -e "s#APP_URL=http://localhost#APP_URL=http://nangjogja.gloqi.com#g" /var/www/.env
 
