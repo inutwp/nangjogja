@@ -101,6 +101,20 @@ services:
         - "traefik.http.services.app.loadbalancer.healthcheck.interval=10s"
       mode: replicated
       replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s 
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: rollback
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        order: stop-first
       resources:
         limits:
           cpus: '0.75'

@@ -17,7 +17,18 @@ find /var/www/ -type d -print0 | xargs -0 chmod 0755
 
 /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
 
-sleep 20
+opcache_conf () {
+	php /var/www/artisan opcache:clear
+	php /var/www/artisan opcache:compile
+}
 
-php /var/www/artisan opcache:clear
-php /var/www/artisan opcache:compile
+if pidof "php-fpm7" > /dev/null
+then
+    echo "php-fpm is running"
+    opcache_conf
+else
+    echo "php-fpm pending"
+    sleep 20
+    opcache_conf
+fi
+
