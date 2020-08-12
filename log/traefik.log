@@ -1,0 +1,10 @@
+{"level":"debug","msg":"Configuration received from provider docker: {\"http\":{},\"tcp\":{},\"udp\":{}}","providerName":"docker","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware api@internal","routerName":"api@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"tracing","middlewareType":"TracingForwarder","msg":"Added outgoing tracing middleware dashboard@internal","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_stripprefix@internal","middlewareType":"StripPrefix","msg":"Creating middleware","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_stripprefix@internal","msg":"Adding tracing to middleware","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","middlewareType":"RedirectRegex","msg":"Creating middleware","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","middlewareType":"RedirectRegex","msg":"Setting up redirection from ^(http:\\/\\/(\\[[\\w:.]+\\]|[\\w\\._-]+)(:\\d+)?)\\/$ to ${1}/dashboard/","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"dashboard_redirect@internal","msg":"Adding tracing to middleware","routerName":"dashboard@internal","time":"2020-08-12T03:49:23Z"}
+{"entryPointName":"traefik","level":"debug","middlewareName":"traefik-internal-recovery","middlewareType":"Recovery","msg":"Creating middleware","time":"2020-08-12T03:49:23Z"}
+{"level":"debug","msg":"No default certificate, generating one","time":"2020-08-12T03:49:23Z"}

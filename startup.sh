@@ -2,10 +2,10 @@
 
 cd /home/nangjogja/public_html/nangjogja/
 
-echo "+++++++++++++++++++++++++++++++++++++++ Create Proxy and Internal Network ++++++++++++++++++++++++++++++++++++++"
-	docker network create proxy && docker network create internal
+docker network create proxy && docker network create internal 
+echo "Create Proxy and Internal Network ... \e[32m done\e[0m"
 
-echo "+++++++++++++++++++++++++++++++++++++++ Build App ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-	docker-compose up --no-deps -d --build --remove-orphans && docker-compose ps
+docker-compose up --no-deps -d --scale app=2 --build --remove-orphans
+echo "Build Service ... \e[32m done\e[0m"
 
-echo "+++++++++++++++++++++++++++++++++++++++ App Ready, Wait for supervisord ++++++++++++++++++++++++++++++++++++++++"
+echo "Service Ready ... \e[32m done\e[0m" && echo "Wait for entrypoint command ... \e[33m on proccess\e[0m"

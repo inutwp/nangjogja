@@ -1,6 +1,5 @@
 version: '3.7'
 
-#Docker Networks
 networks:
   proxy:
     driver: overlay
@@ -9,64 +8,103 @@ networks:
     driver: overlay
     external: true
 
-#Volumes
 volumes:
   lvstorage:
-    driver: local
+  dbdata:
+  portainerdata:
 
 services:
-  # Traefik Service
   traefik:
     image: "traefik:v2.2"
-    restart: unless-stopped
     ports:
-      - target: 80
-        published: 80
-        protocol: tcp
-        mode: host
-      - target: 8080
-        published: 3001
-        protocol: tcp
-        mode: host
+      - 80:80
+      - 3001:8080
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "${CONFIG_DIR}/traefik/traefik.yml:/traefik.yml:ro"
-      - "${CONFIG_DIR}/cred/users_credentials:/users_credentials:ro"
-      - "${LOG_DIR}/traefik.log:/etc/traefik/traefik.log"
-      - "${LOG_DIR}/access_traefik.log:/etc/traefik/access.log"
+      - "./config/traefik/traefik.yml:/traefik.yml:ro"
+      - "./config/cred/users_credentials:/users_credentials:ro"
+      - "./log/traefik.log:/etc/traefik/traefik.log"
+      - "./log/access_traefik.log:/etc/traefik/access.log"
     networks:
       - proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 96M
+        reservations:
+          cpus: '0.10'
+          memory: 48M
 
-  #Laravel PHP Nginx Service
+  portainer:
+    image: "portainer/portainer"
+    ports:
+      - 3002:9000
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "portainerdata:/data"
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 64M
+        reservations:
+          cpus: '0.10'
+          memory: 32M
+
   app:
     image: "inutwp/nangjogja:v1.4.0"
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME_APP}`)"
-      - "traefik.http.routers.app.entrypoints=http"
-      - "traefik.http.routers.app.service=app"
-      - "traefik.http.routers.app.priority=1"
-      - "traefik.http.middlewares.app.contenttype.autodetect=true"
-      - "traefik.http.middlewares.app.compress=true"
-      - "traefik.http.middlewares.app.ratelimit.average=300"
-      - "traefik.http.middlewares.app.ratelimit.burst=150"
-      - "traefik.http.middlewares.app.buffering.maxRequestBodyBytes=1000000"
-      - "traefik.http.middlewares.app.buffering.maxResponseBodyBytes=1000000"
-      - "traefik.http.middlewares.app.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
-      - "traefik.http.middlewares.app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.30 || NetworkErrorRatio() > 0.10"
-      - "traefik.http.services.app.loadbalancer.passhostheader=true"
-      - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
-      - "traefik.http.services.app.loadbalancer.server.scheme=http"
-      - "traefik.http.services.app.loadbalancer.server.port=80"
-      - "traefik.http.services.app.loadbalancer.healthcheck.port=80"
-      - "traefik.http.services.app.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
-      - "traefik.http.services.app.loadbalancer.healthcheck.timeout=5s"
-      - "traefik.http.services.app.loadbalancer.healthcheck.interval=10s"
     volumes:
-      - "${LOG_DIR}/nginx.log:/var/log/nginx/error.log"
-      - "${LOG_DIR}/access_nginx.log:/var/log/nginx/access.log"
+      - "lvstorage:/var/www/storage/logs"
+      - "./log/nginx.log:/var/log/nginx/error.log"
+      - "./log/access_nginx.log:/var/log/nginx/access.log"
     networks:
       - proxy
       - internal
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.http.routers.app.rule=Host(`nangjogja.gloqi.com`)"
+        - "traefik.http.routers.app.entrypoints=http"
+        - "traefik.http.routers.app.service=app"
+        - "traefik.http.routers.app.priority=1"
+        - "traefik.http.middlewares.app.contenttype.autodetect=true"
+        - "traefik.http.middlewares.app.compress=true"
+        - "traefik.http.middlewares.app.ratelimit.average=300"
+        - "traefik.http.middlewares.app.ratelimit.burst=150"
+        - "traefik.http.middlewares.app.buffering.maxRequestBodyBytes=1000000"
+        - "traefik.http.middlewares.app.buffering.maxResponseBodyBytes=1000000"
+        - "traefik.http.middlewares.app.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
+        - "traefik.http.middlewares.app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.30 || NetworkErrorRatio() > 0.10"
+        - "traefik.http.services.app.loadbalancer.passhostheader=true"
+        - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
+        - "traefik.http.services.app.loadbalancer.server.scheme=http"
+        - "traefik.http.services.app.loadbalancer.server.port=80"
+        - "traefik.http.services.app.loadbalancer.healthcheck.port=80"
+        - "traefik.http.services.app.loadbalancer.healthcheck.hostname=nangjogja.gloqi.com"
+        - "traefik.http.services.app.loadbalancer.healthcheck.timeout=5s"
+        - "traefik.http.services.app.loadbalancer.healthcheck.interval=10s"
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 320M
+        reservations:
+          cpus: '0.37'
+          memory: 128M
