@@ -1,9 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 
 cd /home/nangjogja/public_html/nangjogja/
 
 docker-compose down && docker image prune -f && docker service rm nangjogja_portainer nangjogja_traefik nangjogja_app
 echo "Down Service ... \e[32m done\e[0m"
+
+docker images | grep -E 'inutwp/nangjogja'
+isImageNangJogjaExists=$?
+if [ $isImageNangJogjaExists -eq 0 ]; then
+	echo "Remove Image"
+	docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'inutwp/nangjogja')
+fi
 
 docker image prune -f && docker container prune -f
 echo "Clear Redundant ... \e[32m done\e[0m"

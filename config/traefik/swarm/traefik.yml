@@ -15,19 +15,11 @@ entryPoints:
         idleTimeout: 240
   https:
     address: ":443"
-    transport:
-      lifeCycle:
-        requestAcceptGraceTimeout: 120
-        graceTimeOut: 120
-      respondingTimeouts:
-        readTimeout: 120
-        writeTimeout: 120
-        idleTimeout: 240
   mysql:
     address: ":3306"
 api:
-  insecure: true
-  dashboard: true
+  insecure: false
+  dashboard: false
   debug: false
 log:
   level: ERROR
@@ -50,4 +42,4 @@ providers:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
     network: proxy
-    swarmMode: false
+    swarmMode: true

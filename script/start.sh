@@ -1,34 +1,39 @@
 #!/bin/bash
 
-cd /var/www/
+BASEPATH="/var/www/"
+HOMEPATH=${BASEPATH}"nangjogja/"
+ENVFILE=${HOMEPATH}".env"
+ARTISAN=${HOMEPATH}"artisan"
+CONFIGPATH=${HOMEPATH}"config/"
+CONFIGFILE=${CONFIGPATH}"opcache.php"
+STORAGEPATH=${HOMEPATH}"public/storage/"
+
+cd ${HOMEPATH}
 cp .env.example .env
-composer install --optimize-autoloader
 
-sed -i -e "s/APP_NAME=Laravel/APP_NAME=nangjogja/g" /var/www/.env
-sed -i -e "s/APP_ENV=local/APP_ENV=production/g" /var/www/.env
-sed -i -e "s/APP_DEBUG=true/APP_DEBUG=false/g" /var/www/.env
-sed -i -e "s/APP_KEY=/APP_KEY=base64:g4vvYgJLWCSfFOGRKXa7Vwsk2BXkbr8n1PgnWH8vPYY=/g" /var/www/.env
-sed -i -e "s#APP_URL=http://localhost#APP_URL=http://nangjogja.gloqi.com#g" /var/www/.env
+composer install -o
 
-php /var/www/artisan storage:link
-php /var/www/artisan optimize
-chown -R www:www /var/www/ && chmod -R 0644 /var/www/
-find /var/www/ -type d -print0 | xargs -0 chmod 0755
+sed -i -e "s/APP_NAME=Laravel/APP_NAME=nangjogja/g" ${ENVFILE}
+sed -i -e "s/APP_ENV=local/APP_ENV=production/g" ${ENVFILE}
+sed -i -e "s/APP_DEBUG=true/APP_DEBUG=false/g" ${ENVFILE}
+sed -i -e "s/APP_KEY=/APP_KEY=base64:g4vvYgJLWCSfFOGRKXa7Vwsk2BXkbr8n1PgnWH8vPYY=/g" ${ENVFILE}
+sed -i -e "s#APP_URL=http://localhost#APP_URL=http://nangjogja.gloqi.com#g" ${ENVFILE}
 
-/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+php ${ARTISAN} vendor:publish --provider="Appstract\Opcache\OpcacheServiceProvider" --tag="config" && sleep 2
 
-opcache_conf () {
-	php /var/www/artisan opcache:clear
-	php /var/www/artisan opcache:compile
-}
-
-if pidof "php-fpm7" > /dev/null
-then
-    echo "php-fpm is running"
-    opcache_conf
-else
-    echo "php-fpm pending"
-    sleep 20
-    opcache_conf
+if [ ! -d ${CONFIGPATH} ]; then
+	echo "Delete Config Line, If Config Dir Not Exist"
+	sed -i -e "13d" ${CONFIGFILE}
 fi
 
+if [ ! -h ${STORAGEPATH} ] && [ ! -L ${STORAGEPATH} ]; then
+	echo "Crete Storage Link"
+	php ${ARTISAN} storage:link
+fi
+
+php ${ARTISAN} config:clear && php ${ARTISAN} optimize
+
+chown -R nangjogja:nangjogja ${BASEPATH} && chmod -R 0644 ${HOMEPATH}
+find ${HOMEPATH} -type d -print0 | xargs -0 chmod 0755
+
+/usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
