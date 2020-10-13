@@ -56,7 +56,7 @@ isDeploySuccess=$?
 if [ $isDeploySuccess -eq 0 ]
 then
 	echo "Deploy Sucess... \e[32m done\e[0m"
-	sleep 5
+	sleep 3
 	docker service ls
 else
 	echo "Deploy Error... \e[31m error\e[0m"

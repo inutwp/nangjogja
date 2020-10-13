@@ -11,7 +11,7 @@ STORAGEPATH=${HOMEPATH}"public/storage/"
 cd ${HOMEPATH}
 cp .env.example .env
 
-composer install -o
+composer install -o --apcu-autoloader
 
 sed -i -e "s/APP_NAME=Laravel/APP_NAME=nangjogja/g" ${ENVFILE}
 sed -i -e "s/APP_ENV=local/APP_ENV=production/g" ${ENVFILE}

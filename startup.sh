@@ -3,7 +3,7 @@
 HOMEPATH="/home/nangjogja/public_html/nangjogja/"
 IMAGE="inutwp/nangjogja"
 
-cd "${HOMEPATH}"
+cd ${HOMEPATH}
 
 echo "Down all Service"
 docker-compose down && docker container prune -f
@@ -15,7 +15,7 @@ if [ $isImageNangJogjaExists -eq 0 ]; then
 	docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep ${IMAGE})
 fi
 
-echo "Clear Redundant"
+echo "Clear Image Redundant"
 docker image prune -f
 
 echo "Clear Logs"
@@ -34,11 +34,16 @@ for LOGPATH in ${LOGPATHS[@]}; do
 	fi
 done
 
+echo "Create Proxy and Internal Network"
 docker network rm proxy internal && docker network prune -f
 docker network create proxy && docker network create internal 
-echo "Create Proxy and Internal Network"
 
-docker-compose up --no-deps -d --build --remove-orphans
 echo "Build Service"
+docker-compose up -d --no-deps --build --remove-orphans
+resultBuild=$?
+if [ $resultBuild -eq 0 ]; then
+	echo "Service Ready" && echo "Wait for Entrypoint"
+else
+	echo "Error Start Service"	
+fi
 
-echo "Service Ready" && echo "Wait for entrypoint"

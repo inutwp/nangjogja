@@ -45,8 +45,9 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/a
     php-sockets \
     php-xml \
     php-opcache \
-    tzdata && \
-    htop && \
+    tzdata \
+    htop \
+    openssh-client && \
     ln -s /usr/bin/php7 /usr/bin/php
 
 # Config Nginx
@@ -104,7 +105,7 @@ COPY ${LARAVEL_DIR} ${WORK_DIR}
 RUN mkdir -p ${VENDOR_DIR}
 
 # Expose Port
-EXPOSE 80 443 5947 801
+EXPOSE 80 5947 801
 
 # Copy & start config
 COPY /script/start.sh /start.sh

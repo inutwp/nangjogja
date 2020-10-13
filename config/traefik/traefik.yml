@@ -1,7 +1,7 @@
 serversTransport:
   maxIdleConnsPerHost: 1000
   forwardingTimeouts:
-    dialTimeout: 60
+    dialTimeout: 120
 entryPoints:
   http:
     address: ":80"
@@ -15,14 +15,6 @@ entryPoints:
         idleTimeout: 240
   https:
     address: ":443"
-    transport:
-      lifeCycle:
-        requestAcceptGraceTimeout: 120
-        graceTimeOut: 120
-      respondingTimeouts:
-        readTimeout: 120
-        writeTimeout: 120
-        idleTimeout: 240
   mysql:
     address: ":3306"
 api:
