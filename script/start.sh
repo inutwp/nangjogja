@@ -18,6 +18,7 @@ sed -i -e "s/APP_ENV=local/APP_ENV=production/g" ${ENVFILE}
 sed -i -e "s/APP_DEBUG=true/APP_DEBUG=false/g" ${ENVFILE}
 sed -i -e "s/APP_KEY=/APP_KEY=base64:g4vvYgJLWCSfFOGRKXa7Vwsk2BXkbr8n1PgnWH8vPYY=/g" ${ENVFILE}
 sed -i -e "s#APP_URL=http://localhost#APP_URL=http://nangjogja.gloqi.com#g" ${ENVFILE}
+sed -i -e "s#APP_TIMEZONE=UTC#APP_TIMEZONE=Asia/Jakarta#g" ${ENVFILE}
 
 php ${ARTISAN} vendor:publish --provider="Appstract\Opcache\OpcacheServiceProvider" --tag="config" && sleep 2
 
@@ -30,6 +31,8 @@ if [ ! -h ${STORAGEPATH} ] && [ ! -L ${STORAGEPATH} ]; then
 	echo "Crete Storage Link"
 	php ${ARTISAN} storage:link
 fi
+
+php ${ARTISAN} ui bootstrap --auth && npm install && npm run production
 
 php ${ARTISAN} config:clear && php ${ARTISAN} optimize
 
