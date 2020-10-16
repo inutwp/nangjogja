@@ -47,7 +47,7 @@ else
 fi
 
 echo "Run Deploy..."
-runDeploy=$( docker stack deploy -c docker-stack.yml nangjogja )
+runDeploy=$( docker stack deploy -c docker-swarm.yml nangjogja )
 isDeploySuccess=$?
 if [ $isDeploySuccess -eq 0 ]
 then

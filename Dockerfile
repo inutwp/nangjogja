@@ -48,8 +48,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/main" > /etc/a
     nodejs \
     npm \
     tzdata \
-    htop \
-    openssh-client && \
+    htop && \
     ln -s /usr/bin/php7 /usr/bin/php
 
 # Config Nginx
