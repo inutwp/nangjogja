@@ -4,18 +4,16 @@ cd /home/nangjogja/public_html/nangjogja/
 
 checkImageNangJogjaisExists=$( docker images | grep -E 'inutwp/nangjogja' )
 isImageNangJogjaExists=$?
-
 if [ $isImageNangJogjaExists -eq 0 ]
 then
 	echo "Image nangjogja is Exists"
 else
 	echo "Pulling Image..."
-	docker pull inutwp/nangjogja:v1.4.0
+	docker pull inutwp/nangjogja:v1.6.0
 fi
 
 checkInternalNetworkisExists=$( docker network ls | grep -E 'internal.*overlay' )
 isInternalNetworkExists=$?
-
 if [ $isInternalNetworkExists -eq 0 ]
 then
 	echo "Internal Network is Exists"
@@ -33,7 +31,6 @@ fi
 
 checkProxyNetworkisExists=$( docker network ls | grep -E 'proxy.*overlay' )
 isProxyNetworkExists=$?
-
 if [ $isProxyNetworkExists -eq 0 ]
 then
 	echo "Proxy Network is Exists"
@@ -50,13 +47,12 @@ else
 fi
 
 echo "Run Deploy..."
-runDeploy=$( docker stack deploy -c docker-stack.yml nangjogja )
+runDeploy=$( docker stack deploy -c docker-swarm.yml nangjogja )
 isDeploySuccess=$?
-
 if [ $isDeploySuccess -eq 0 ]
 then
 	echo "Deploy Sucess... \e[32m done\e[0m"
-	sleep 5
+	sleep 3
 	docker service ls
 else
 	echo "Deploy Error... \e[31m error\e[0m"

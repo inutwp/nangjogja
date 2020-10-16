@@ -3,34 +3,48 @@ serversTransport:
   forwardingTimeouts:
     dialTimeout: 60
 entryPoints:
-  http:
+  web:
     address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https 
     transport:
       lifeCycle:
-        requestAcceptGraceTimeout: 120
-        graceTimeOut: 120
+        requestAcceptGraceTimeout: 60
+        graceTimeOut: 60
       respondingTimeouts:
         readTimeout: 120
         writeTimeout: 120
         idleTimeout: 240
-  https:
+  websecure:
     address: ":443"
     transport:
       lifeCycle:
-        requestAcceptGraceTimeout: 120
-        graceTimeOut: 120
+        requestAcceptGraceTimeout: 60
+        graceTimeOut: 60
       respondingTimeouts:
         readTimeout: 120
         writeTimeout: 120
         idleTimeout: 240
+  traefik:
+    address: ":8080"
   mysql:
     address: ":3306"
 api:
   insecure: true
   dashboard: true
   debug: false
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "master.gloqi@gmail.com"
+      storage: "/acme/acme.json"
+      httpChallenge:
+        entryPoint: web
 log:
-  level: ERROR
+  level: WARN
   filePath: "/etc/traefik/traefik.log"
   format: "json"
 accessLog:
@@ -42,8 +56,9 @@ accessLog:
   bufferingSize: 100
   filters:
     statusCodes:
-      - "400-499"
-      - "500"
+      - "300-302"
+      - "400-411"
+      - "500-524"
 providers:
   providersThrottleDuration: 2
   docker:

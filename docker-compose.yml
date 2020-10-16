@@ -14,20 +14,31 @@ volumes:
 
 services:
   traefik:
-    image: "traefik:v2.2"
+    image: "traefik"
     environment:
       - TZ=Asia/Jakarta
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.traefik_dash.rule=Host(`${TRAEFIK_DASH}`)"
+      - "traefik.http.routers.traefik_dash.entrypoints=websecure"
+      - "traefik.http.routers.traefik_dash.tls=true"
+      - "traefik.http.routers.traefik_dash.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik_dash.priority=10"
+      - "traefik.http.routers.traefik_dash.middlewares=dash-auth"
+      - "traefik.http.services.traefik_dash.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.dash-auth.basicauth.usersfile=/users_credentials"
     ports:
       - 80:80
       - 443:443
-      - 3001:8080
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "${CONFIG_DIR}/traefik/traefik.yml:/traefik.yml:ro"
       - "${CONFIG_DIR}/cred/users_credentials:/users_credentials:ro"
       - "${LOG_DIR}/traefik.log:/etc/traefik/traefik.log"
       - "${LOG_DIR}/access_traefik.log:/etc/traefik/access.log"
+      - "${LOG_DIR}/acme.json:/acme/acme.json"
     networks:
       - proxy
 
@@ -35,31 +46,25 @@ services:
     build:
       context: "."
       dockerfile: Dockerfile
-    image: "inutwp/nangjogja:v1.4.0"
+    image: "inutwp/nangjogja:v1.6.0"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
       - "traefik.http.routers.app.rule=Host(`${DOMAIN_NAME_APP}`)"
-      - "traefik.http.routers.app.entrypoints=http"
-      - "traefik.http.routers.app.service=app"
-      - "traefik.http.routers.app.priority=1"
-      - "traefik.http.middlewares.app.contenttype.autodetect=true"
+      - "traefik.http.routers.app.entrypoints=websecure"
+      - "traefik.http.routers.app.tls=true"
+      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.app.priority=5"
       - "traefik.http.middlewares.app.compress=true"
-      - "traefik.http.middlewares.app.ratelimit.average=300"
-      - "traefik.http.middlewares.app.ratelimit.burst=150"
+      - "traefik.http.middlewares.app.ratelimit.average=10"
+      - "traefik.http.middlewares.app.ratelimit.period=1m"
+      - "traefik.http.middlewares.app.ratelimit.burst=100"
       - "traefik.http.middlewares.app.buffering.maxRequestBodyBytes=1000000"
       - "traefik.http.middlewares.app.buffering.maxResponseBodyBytes=1000000"
       - "traefik.http.middlewares.app.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
       - "traefik.http.middlewares.app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.30 || NetworkErrorRatio() > 0.10"
-      - "traefik.http.services.app.loadbalancer.passhostheader=true"
-      - "traefik.http.services.app.loadbalancer.responseforwarding.flushinterval=20s"
-      - "traefik.http.services.app.loadbalancer.server.scheme=http"
-      - "traefik.http.services.app.loadbalancer.server.port=80"
-      - "traefik.http.services.app.loadbalancer.healthcheck.port=80"
-      - "traefik.http.services.app.loadbalancer.healthcheck.hostname=${DOMAIN_NAME_APP}"
-      - "traefik.http.services.app.loadbalancer.healthcheck.timeout=5s"
-      - "traefik.http.services.app.loadbalancer.healthcheck.interval=10s"
+      - "traefik.http.services.app.loadbalancer.server.port=2901"
     volumes:
       - "${LOG_DIR}/nginx.log:/var/log/nginx/error.log"
       - "${LOG_DIR}/access_nginx.log:/var/log/nginx/access.log"

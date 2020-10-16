@@ -1,24 +1,38 @@
-#!/bin/sh
+#!/bin/bash
 
-cd /home/nangjogja/public_html/nangjogja/
+HOMEPATH="/home/nangjogja/public_html/nangjogja/"
+IMAGE="inutwp/nangjogja"
 
+cd ${HOMEPATH}
+
+echo "Down Service"
 docker-compose down && docker image prune -f && docker service rm nangjogja_portainer nangjogja_traefik nangjogja_app
-echo "Down Service ... \e[32m done\e[0m"
 
-docker images | grep -E 'inutwp/nangjogja'
+docker images | grep -E ${IMAGE}
 isImageNangJogjaExists=$?
 if [ $isImageNangJogjaExists -eq 0 ]; then
 	echo "Remove Image"
-	docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep 'inutwp/nangjogja')
+	docker rmi $(docker images --format '{{.Repository}}:{{.Tag}}' | grep ${IMAGE})
 fi
 
+echo "Clear Redundant"
 docker image prune -f && docker container prune -f
-echo "Clear Redundant ... \e[32m done\e[0m"
 
-truncate -s 0 /home/nangjogja/public_html/nangjogja/log/nginx.log
-truncate -s 0 /home/nangjogja/public_html/nangjogja/log/traefik.log
-truncate -s 0 /home/nangjogja/public_html/nangjogja/log/access_traefik.log
-truncate -s 0 /home/nangjogja/public_html/nangjogja/log/access_nginx.log
-echo "Clear Log ... \e[32m done\e[0m"
+echo "Clear Logs"
+LOGPATHS=(
+${HOMEPATH}/log/nginx.log
+${HOMEPATH}/log/traefik.log
+${HOMEPATH}/log/access_traefik.log
+${HOMEPATH}/log/access_nginx.log
+)
 
-echo "All Service Down ... \e[32m done\e[0m"
+for LOGPATH in ${LOGPATHS[@]}; do
+	if [ ! -e ${LOGPATH} ]; then
+		echo ${LOGPATH} "File Not Found"
+		continue
+	else
+		truncate -s 0 ${LOGPATH}
+	fi
+done
+
+echo "All Service Down"
