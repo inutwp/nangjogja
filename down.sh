@@ -20,17 +20,18 @@ docker image prune -f && docker container prune -f
 
 echo "Clear Logs"
 LOGPATHS=(
-${HOMEPATH}/log/nginx.log 
-${HOMEPATH}/log/traefik.log 
-${HOMEPATH}/log/access_traefik.log 
+${HOMEPATH}/log/nginx.log
+${HOMEPATH}/log/traefik.log
+${HOMEPATH}/log/access_traefik.log
 ${HOMEPATH}/log/access_nginx.log
 )
 
 for LOGPATH in ${LOGPATHS[@]}; do
 	if [ ! -e ${LOGPATH} ]; then
-		echo ${LOGPATH} "Not Found"
+		echo ${LOGPATH} "File Not Found"
+		continue
 	else
-		truncate -s 0 ${LOGPATH} 
+		truncate -s 0 ${LOGPATH}
 	fi
 done
 

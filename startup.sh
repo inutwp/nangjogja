@@ -18,25 +18,27 @@ fi
 echo "Clear Image Redundant"
 docker image prune -f
 
-echo "Clear Logs"
+echo "Logs Config"
 LOGPATHS=(
-${HOMEPATH}/log/nginx.log 
-${HOMEPATH}/log/traefik.log 
-${HOMEPATH}/log/access_traefik.log 
+${HOMEPATH}/log/nginx.log
+${HOMEPATH}/log/traefik.log
+${HOMEPATH}/log/access_traefik.log
 ${HOMEPATH}/log/access_nginx.log
 )
 
 for LOGPATH in ${LOGPATHS[@]}; do
 	if [ ! -e ${LOGPATH} ]; then
-		echo ${LOGPATH} "Not Found"
+		echo ${LOGPATH} "Not Found, Create One"
+		touch ${LOGPATH}
 	else
-		truncate -s 0 ${LOGPATH} 
+		echo ${LOGPATH} "Clear Log File"
+		truncate -s 0 ${LOGPATH}
 	fi
 done
 
 echo "Create Proxy and Internal Network"
 docker network rm proxy internal && docker network prune -f
-docker network create proxy && docker network create internal 
+docker network create proxy && docker network create internal
 
 echo "Build Service"
 docker-compose up -d --no-deps --build --remove-orphans
@@ -50,4 +52,3 @@ else
 	echo "Re-Run Script"
 	bash ${HOMEPATH}/startup.sh
 fi
-
