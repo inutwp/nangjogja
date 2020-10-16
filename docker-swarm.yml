@@ -1,0 +1,131 @@
+version: '3.7'
+
+networks:
+  proxy:
+    driver: overlay
+    external: true
+  internal:
+    driver: overlay
+    external: true
+
+volumes:
+  lvstorage:
+  dbdata:
+  portainerdata:
+
+services:
+  traefik:
+    image: "traefik"
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./config/traefik/swarm/traefik.yml:/traefik.yml:ro"
+      - "./config/cred/users_credentials:/users_credentials:ro"
+      - "./log/traefik.log:/etc/traefik/traefik.log"
+      - "./log/access_traefik.log:/etc/traefik/access.log"
+      - "./log/acme.json:/acme/acme.json"
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.http.routers.traefik_dash.rule=Host(`traefik.gloqi.com`)"
+        - "traefik.http.routers.traefik_dash.entrypoints=websecure"
+        - "traefik.http.routers.traefik_dash.tls=true"
+        - "traefik.http.routers.traefik_dash.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.traefik_dash.priority=10"
+        - "traefik.http.routers.traefik_dash.middlewares=dash-auth"
+        - "traefik.http.services.traefik_dash.loadbalancer.server.port=8080"
+        - "traefik.http.middlewares.dash-auth.basicauth.usersfile=/users_credentials"
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 96M
+        reservations:
+          cpus: '0.10'
+          memory: 48M
+
+  portainer:
+    image: "portainer/portainer-ce"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "portainerdata:/data"
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.http.routers.portainer.rule=Host(`portainer.gloqi.com`)"
+        - "traefik.http.routers.portainer.entrypoints=websecure"
+        - "traefik.http.routers.portainer.tls=true"
+        - "traefik.http.routers.portainer.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.portainer.priority=9"
+        - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+      resources:
+        limits:
+          cpus: '0.20'
+          memory: 64M
+        reservations:
+          cpus: '0.10'
+          memory: 32M
+
+  app:
+    image: "inutwp/nangjogja:v1.6.0"
+    volumes:
+      - "lvstorage:/var/www/storage/logs"
+      - "./log/nginx.log:/var/log/nginx/error.log"
+      - "./log/access_nginx.log:/var/log/nginx/access.log"
+    networks:
+      - proxy
+      - internal
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=proxy"
+        - "traefik.http.routers.app.rule=Host(`staging.gloqi.com`)"
+        - "traefik.http.routers.app.entrypoints=websecure"
+        - "traefik.http.routers.app.tls=true"
+        - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.app.priority=5"
+        - "traefik.http.middlewares.app.compress=true"
+        - "traefik.http.middlewares.app.ratelimit.average=10"
+        - "traefik.http.middlewares.app.ratelimit.period=1m"
+        - "traefik.http.middlewares.app.ratelimit.burst=100"
+        - "traefik.http.middlewares.app.buffering.maxRequestBodyBytes=1000000"
+        - "traefik.http.middlewares.app.buffering.maxResponseBodyBytes=1000000"
+        - "traefik.http.middlewares.app.buffering.retryExpression=IsNetworkError() && Attempts() < 2"
+        - "traefik.http.middlewares.app.circuitbreaker.expression=ResponseCodeRatio(500, 600, 0, 600) > 0.30 || NetworkErrorRatio() > 0.10"
+        - "traefik.http.services.app.loadbalancer.server.port=2901"
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s 
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: rollback
+        order: stop-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        order: stop-first
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 320M
+        reservations:
+          cpus: '0.37'
+          memory: 128M
