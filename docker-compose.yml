@@ -46,7 +46,7 @@ services:
     build:
       context: "."
       dockerfile: Dockerfile
-    image: "inutwp/nangjogja:v1.4.0"
+    image: "inutwp/nangjogja:v1.6.0"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"

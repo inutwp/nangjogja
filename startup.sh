@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOMEPATH="/home/nangjogja/public_html/nangjogja/"
+HOMEPATH="/home/nangjogja/public_html/nangjogja"
 IMAGE="inutwp/nangjogja"
 
 cd ${HOMEPATH}
@@ -44,6 +44,10 @@ resultBuild=$?
 if [ $resultBuild -eq 0 ]; then
 	echo "Service Ready" && echo "Wait for Entrypoint"
 else
-	echo "Error Start Service"	
+	echo "Error Start Service"
+	sleep 2
+
+	echo "Re-Run Script"
+	bash ${HOMEPATH}/startup.sh
 fi
 
