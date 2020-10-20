@@ -4,9 +4,11 @@ networks:
   proxy:
     driver: overlay
     external: true
+    attachable: true
   internal:
     driver: overlay
     external: true
+    attachable: true
 
 volumes:
   lvstorage:
@@ -21,11 +23,11 @@ services:
       - 443:443
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./config/traefik/swarm/traefik.yml:/traefik.yml:ro"
-      - "./config/cred/users_credentials:/users_credentials:ro"
-      - "./log/traefik.log:/etc/traefik/traefik.log"
-      - "./log/access_traefik.log:/etc/traefik/access.log"
-      - "./log/acme.json:/acme/acme.json"
+      - "../config/traefik/swarm/traefik.yml:/traefik.yml:ro"
+      - "../config/cred/users_credentials:/users_credentials:ro"
+      - "../log/traefik.log:/etc/traefik/traefik.log"
+      - "../log/access_traefik.log:/etc/traefik/access.log"
+      - "../log/acme.json:/acme/acme.json"
     networks:
       - proxy
     deploy:
@@ -83,8 +85,8 @@ services:
     image: "inutwp/nangjogja:v1.6.0"
     volumes:
       - "lvstorage:/var/www/storage/logs"
-      - "./log/nginx.log:/var/log/nginx/error.log"
-      - "./log/access_nginx.log:/var/log/nginx/access.log"
+      - "../log/nginx.log:/var/log/nginx/error.log"
+      - "../log/access_nginx.log:/var/log/nginx/access.log"
     networks:
       - proxy
       - internal
