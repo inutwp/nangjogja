@@ -32,7 +32,7 @@ if [ ! -h ${STORAGEPATH} ] && [ ! -L ${STORAGEPATH} ]; then
 	php ${ARTISAN} storage:link
 fi
 
-php ${ARTISAN} ui bootstrap --auth && npm install && npm run production
+# php ${ARTISAN} ui bootstrap --auth && npm install && npm run production
 
 php ${ARTISAN} config:clear && php ${ARTISAN} optimize
 
