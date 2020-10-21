@@ -2,11 +2,11 @@ version: '3.7'
 
 networks:
   proxy:
-    driver: overlay
-    external: true
+    driver: bridge
+    name: proxy
   internal:
-    driver: overlay
-    external: true
+    driver: bridge
+    name: internal
 
 volumes:
   lvstorage:
@@ -17,7 +17,7 @@ services:
     image: "traefik"
     environment:
       - TZ=Asia/Jakarta
-    restart: unless-stopped
+    restart: on-failure
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -43,11 +43,8 @@ services:
       - proxy
 
   app:
-    build:
-      context: "."
-      dockerfile: Dockerfile
     image: "inutwp/nangjogja:v1.6.0"
-    restart: unless-stopped
+    restart: on-failure
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
